@@ -1,8 +1,8 @@
 const MAX_OR_MIN = Union{typeof(max),typeof(min)}
 
 """
-    extreme_filter(f, A; r=1, [dims]) -> out
-    extreme_filter(f, A, Ω) -> out
+    extreme_filter(f, A, use_simd=false; r=1, [dims]) -> out
+    extreme_filter(f, A, Ω, use_simd) -> out
 
 Filter the array `A` using select function `f(x, y)` for each Ω-neighborhood. The name
 "extreme" comes from the fact that typical select function `f` choice is `min` and `max`.
@@ -16,6 +16,10 @@ The Ω-neighborhood is defined by the `dims` or `Ω` argument. The `r` and `dims
 specifies the box shape neighborhood `Ω` using [`strel_box`](@ref). The `Ω` is also known as
 structuring element (SE), it can be either displacement offsets or bool array mask, please
 refer to [`strel`](@ref) for more details.
+
+The argument `use_simd` is used to indicate whether to opt-in for acceleration using 
+LoopVectorization's SIMD capabilities. This will be automatically set to `true` if you are 
+using LoopVectorization in the current setting. Users should not need to specify this manually
 
 # Examples
 
