@@ -8,11 +8,6 @@ using OffsetArrays: centered
 using LinearAlgebra
 using TiledIteration: EdgeIterator, SplitAxis, SplitAxes
 
-# backwards compat for package extensions vs Requires.jl
-if !isdefined(Base, :get_extension)
-    using Requires
-end
-
 const _docstring_se = """
 `se` is the structuring element that defines the neighborhood of the image. See
 [`strel`](@ref) for more details. If `se` is not specified, then it will use the
@@ -154,12 +149,5 @@ export
     regional_maxima!,
     regional_minima,
     regional_minima!
-
-@static if !isdefined(Base, :get_extension)
-    function __init__()
-        @require ImageMetadata = "bc367c6b-8a6b-528e-b4bd-a4b897500b49" include("../ext/ImageMetadataExt/ImageMetadataExt.jl")
-        @require LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890" include("../ext/LoopVectorizationExt/LoopVectorizationExt.jl")
-    end
-end
 
 end # module

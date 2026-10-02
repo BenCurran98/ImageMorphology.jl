@@ -1,4 +1,4 @@
-module LoopVectorizationExt
+module ImageMorphologyLoopVectorizationExt
 
 using ImageMorphology, LoopVectorization
 
