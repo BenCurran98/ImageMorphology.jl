@@ -138,6 +138,12 @@ high_leveling
 low_leveling
 ```
 
+## SIMD Acceleration
+```@docs
+set_simd_use!
+ImageMorphology.will_use_simd
+```
+
 ## Misc
 
 ```@docs

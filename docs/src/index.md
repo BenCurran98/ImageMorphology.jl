@@ -68,3 +68,22 @@ Structuring element is the key concept in morphology. If you're not familiar wit
 | :--------------------------| :------ | ---- |
 | [`underbuild`](@ref)       | morphological reconstruction by dilation, see also [`mreconstruct`](@ref) | [`underbuild` operation](@ref op_underbuild) and [`mreconstruct` operation](@ref op_mreconstruct)
 | [`underbuild`](@ref)       | morphological reconstruction by erosion, see also [`mreconstruct`](@ref) | [`overbuild` operation](@ref op_overbuild) and [`mreconstruct` operation](@ref op_mreconstruct)
+
+### SIMD Acceleration
+
+ImageMorphology supports the use of SIMD-based acceleration techniques for the [`extreme_filter`](@ref) function by using 
+functionality found in [LoopVectorization.jl](https://github.com/JuliaSIMD/LoopVectorization.jl).
+
+You must opt-in to use this feature, which can be done either by setting your the package preference `use_simd` to `true`, 
+or via the function [`set_simd_use!`](@ref). 
+
+Note that you must also have LoopVectorization.jl loaded in your current environment, otherwise the default methods will be used.
+
+E.g. 
+
+```julia
+using ImageMorphology
+using LoopVectorization
+
+set_simd_use!(true)
+```

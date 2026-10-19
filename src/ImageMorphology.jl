@@ -40,6 +40,15 @@ function set_simd_use!(to_use::Bool)
     @set_preferences!("use_simd" => to_use)
 end
 
+"""
+    will_use_simd()
+
+Returns `true` if the system will use SIMD acceleration backends in [`extreme_filter`](@ref) calls
+and `false` otherwise.
+
+Checks for the flag in package preferences, but overrides to `false` if LoopVectorization.jl isn't loaded
+in the current session. 
+"""
 function will_use_simd()
     # check if the user has explicitly requested to use SIMD
     user_preference = @load_preference("use_simd", false)
