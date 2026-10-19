@@ -1,12 +1,13 @@
 using ImageMorphology
 using ImageCore
 using ImageCore.PaddedViews
-using LoopVectorization
 using Test
 using OffsetArrays
 using ImageMetadata
 using Suppressor
 using Documenter
+
+include("simd_preferences.jl")
 
 @test isempty(detect_ambiguities(ImageMorphology))
 

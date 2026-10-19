@@ -6,6 +6,7 @@ using ImageCore: GenericGrayImage, MappedArrays, FixedPointNumbers
 using OffsetArrays
 using OffsetArrays: centered
 using LinearAlgebra
+using Preferences
 using TiledIteration: EdgeIterator, SplitAxis, SplitAxes
 
 const _docstring_se = """
@@ -17,8 +18,39 @@ and half-size `r` to control the diamond size.
 include("StructuringElements/StructuringElements.jl")
 using .StructuringElements
 
-# flag indicating whether or not to use LoopVectorization for SIMD acceleration - will be triggered when users explicitly load LoopVectorization
-const USE_SIMD = Ref(false)
+# flag indicating if we have LoopVectorization available in the current environment - indicates if we have the option of using SIMD or not
+const LV_PRESENT = Ref(false)
+const LV_MISSING_WARNING = "LoopVectorization.jl is required to be loaded in order to use SIMD acceleration. Run `using LoopVectorization` to enable this feature."
+
+"""
+    set_simd_use!(to_use::Bool)
+
+Set a preference in the current environment indicating whether or not to use SIMD acceleration as a backend for 
+[`extreme_filter`](@ref) calls.
+
+Note that this will be turned off by default. Additionally, LoopVectorization.jl must be loaded for this feature to take
+effect.
+"""
+function set_simd_use!(to_use::Bool)
+    # add a warning here if a user requests SIMD use but LoopVectorization isn't loaded
+    if to_use && !LV_PRESENT[]
+        @warn LV_MISSING_WARNING
+    end
+    # still set the flag to their preference in case they load LV later
+    @set_preferences!("use_simd" => to_use)
+end
+
+function will_use_simd()
+    # check if the user has explicitly requested to use SIMD
+    user_preference = @load_preference("use_simd", false)
+    # verify that we actually have LoopVectorization available to use SIMD
+    if user_preference && !LV_PRESENT[]
+        @warn LV_MISSING_WARNING
+        return false
+    else
+        return user_preference
+    end
+end
 
 include("convexhull.jl")
 include("connected.jl")
@@ -148,6 +180,9 @@ export
     regional_maxima,
     regional_maxima!,
     regional_minima,
-    regional_minima!
+    regional_minima!,
+
+    # SIMD preferences
+    set_simd_use!
 
 end # module

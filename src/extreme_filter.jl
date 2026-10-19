@@ -17,9 +17,10 @@ specifies the box shape neighborhood `Ω` using [`strel_box`](@ref). The `Ω` is
 structuring element (SE), it can be either displacement offsets or bool array mask, please
 refer to [`strel`](@ref) for more details.
 
-The argument `use_simd` is used to indicate whether to opt-in for acceleration using 
-LoopVectorization's SIMD capabilities. This will be automatically set to `true` if you are 
-using LoopVectorization in the current setting. Users should not need to specify this manually
+Users have the option of leveraging specialised methods that use SIMD acceleration (via LoopVectorization.jl)
+in the backend. This preference can be set either by setting the package preference for `"use_simd"` or
+by using the function [`set_simd_use!`](@ref). Note that to have this work you need to have LoopVectorization.jl
+loaded in your environment.
 
 # Examples
 
@@ -82,8 +83,8 @@ true
 See also the in-place version [`extreme_filter!`](@ref). Another function in ImageFiltering
 package `ImageFiltering.mapwindow` provides similar functionality.
 """
-extreme_filter(f, A, use_simd::Bool=USE_SIMD[]; r=nothing, dims=coords_spatial(A)) = extreme_filter(f, A, strel_box(A, dims; r), use_simd)
-extreme_filter(f, A, Ω::AbstractArray, use_simd::Bool=USE_SIMD[]) = extreme_filter!(f, similar(A), A, Ω, use_simd)
+extreme_filter(f, A; r=nothing, dims=coords_spatial(A)) = extreme_filter(f, A, strel_box(A, dims; r))
+extreme_filter(f, A, Ω::AbstractArray) = extreme_filter!(f, similar(A), A, Ω)
 
 """
     extreme_filter!(f, out, A; [r], [dims])
@@ -92,11 +93,11 @@ extreme_filter(f, A, Ω::AbstractArray, use_simd::Bool=USE_SIMD[]) = extreme_fil
 The in-place version of [`extreme_filter`](@ref) where `out` is the output array that gets
 modified.
 """
-extreme_filter!(f, out, A, use_simd::Bool=USE_SIMD[]; r=nothing, dims=coords_spatial(A)) = extreme_filter!(f, out, A, strel_box(A, dims; r), use_simd)
-function extreme_filter!(f, out, A, Ω, use_simd::Bool = USE_SIMD[])
+extreme_filter!(f, out, A; r=nothing, dims=coords_spatial(A)) = extreme_filter!(f, out, A, strel_box(A, dims; r))
+function extreme_filter!(f, out, A, Ω)
     axes(out) == axes(A) || throw(DimensionMismatch("axes(out) must match axes(A)"))
     require_select_function(f, eltype(A))
-    return _extreme_filter!(strel_type(Ω), f, out, A, Ω, use_simd)
+    return _extreme_filter!(strel_type(Ω), f, out, A, Ω, will_use_simd())
 end
 
 _extreme_filter!(::MorphologySE, f, out, A, Ω, ::Bool) = _extreme_filter_generic!(f, out, A, Ω)

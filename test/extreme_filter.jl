@@ -97,7 +97,9 @@
     for (se_gen_func, se_name) in Any[(strel_diamond, "diamond"), (strel_box, "box")]
         test_name = "optimization: $se_name"
         @testset "$test_name" begin
+            # check that our methods work using both SIMD acceleration and generic fallbacks
             for accelerate_mode ∈ (true, false)
+                set_simd_use!(accelerate_mode)
                 # ensure the optimized implementation work equivalently to the generic fallback implementation
                 for T in Any[Bool, Int, N0f8, Gray{N0f8}, Gray{Bool}, Gray{Float64}, Float64]
                     for N in (1, 2, 3)
@@ -108,7 +110,7 @@
                             for dims in dims_list
                                 se = se_gen_func(ntuple(_ -> 2r + 1, N), dims)
                                 ref = ImageMorphology._extreme_filter_generic!(max, similar(img), img, se)
-                                out = extreme_filter(max, img, se, accelerate_mode)
+                                out = extreme_filter(max, img, se)
                                 @test out == ref
 
                                 # `maybe_floattype` is used to pre-allocate the output for
@@ -116,11 +118,11 @@
                                 # behavior. We need to ensure it works correctly.
                                 # https://github.com/JuliaImages/ImageMorphology.jl/issues/104
                                 out = similar(img, ImageMorphology.maybe_floattype(T))
-                                extreme_filter!(max, out, img, se, accelerate_mode)
+                                extreme_filter!(max, out, img, se)
                                 @test out == ref
 
                                 imgc = centered(img)
-                                outc = extreme_filter(max, imgc, se, accelerate_mode)
+                                outc = extreme_filter(max, imgc, se)
                                 @test outc == centered(out)
                             end
                         end

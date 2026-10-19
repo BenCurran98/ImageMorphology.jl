@@ -7,3 +7,5 @@ Manifest.toml
 
 /docs/build
 /.benchmarkci
+
+*LocalPreferences.toml

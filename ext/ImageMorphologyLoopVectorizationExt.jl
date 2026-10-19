@@ -7,8 +7,8 @@ using OffsetArrays
 
 
 function __init__()
-    # let the system know that we can opt-in to use LoopVectorization accelerations by default
-    ImageMorphology.USE_SIMD[] = true
+    # let the system know that we have LoopVectorization available and have the option to opt-in to SIMD acceleration
+    ImageMorphology.LV_PRESENT[] = true
 end
 
 @static if Sys.WORD_SIZE == 64
