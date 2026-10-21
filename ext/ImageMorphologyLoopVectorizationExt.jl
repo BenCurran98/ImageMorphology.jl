@@ -129,13 +129,12 @@ function ImageMorphology._extreme_filter_diamond!(f, out, A, Ω::ImageMorphology
 end
 
 function ImageMorphology._extreme_filter_box!(f, out, A, Ω::ImageMorphology.SEBoxArray{N}, ::Val{true}) where {N}
+    # we only ever call this code for a specific 2D case, but just in case, we'll verify that conditions are met
     rΩ = strel_size(Ω) .÷ 2
-    if N == 2 && f isa ImageMorphology.MAX_OR_MIN && all(rΩ[1] .== rΩ)
-        iter = rΩ[1]
-        return _extreme_filter_box_2D!(f, out, A, iter)
-    else
-        return ImageMorphology._extreme_filter_generic!(f, out, A, Ω)
-    end
+    invalid_use_msg = "Invalid use of `_extreme_filter_box!`: Image should be 2D, function should be max or min and all structuring element dimensions should be the same"
+    @assert N == 2 && f isa ImageMorphology.MAX_OR_MIN && all(rΩ[1] .== rΩ) invalid_use_msg
+    iter = rΩ[1]
+    return _extreme_filter_box_2D!(f, out, A, iter)
 end
 
 @static if Sys.WORD_SIZE == 64

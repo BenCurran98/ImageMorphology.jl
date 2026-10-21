@@ -108,22 +108,24 @@
                         for r in (1, 3)
                             dims_list = ntuple(i -> ntuple(identity, i), N)
                             for dims in dims_list
-                                se = se_gen_func(ntuple(_ -> 2r + 1, N), dims)
-                                ref = ImageMorphology._extreme_filter_generic!(max, similar(img), img, se)
-                                out = extreme_filter(max, img, se)
-                                @test out == ref
+                                for extreme_func ∈ (min, max)
+                                    se = se_gen_func(ntuple(_ -> 2r + 1, N), dims)
+                                    ref = ImageMorphology._extreme_filter_generic!(extreme_func, similar(img), img, se)
+                                    out = extreme_filter(extreme_func, img, se)
+                                    @test out == ref
 
-                                # `maybe_floattype` is used to pre-allocate the output for
-                                # higher level operators (e.g., tophat) to avoid overflow
-                                # behavior. We need to ensure it works correctly.
-                                # https://github.com/JuliaImages/ImageMorphology.jl/issues/104
-                                out = similar(img, ImageMorphology.maybe_floattype(T))
-                                extreme_filter!(max, out, img, se)
-                                @test out == ref
+                                    # `maybe_floattype` is used to pre-allocate the output for
+                                    # higher level operators (e.g., tophat) to avoid overflow
+                                    # behavior. We need to ensure it works correctly.
+                                    # https://github.com/JuliaImages/ImageMorphology.jl/issues/104
+                                    out = similar(img, ImageMorphology.maybe_floattype(T))
+                                    extreme_filter!(extreme_func, out, img, se)
+                                    @test out == ref
 
-                                imgc = centered(img)
-                                outc = extreme_filter(max, imgc, se)
-                                @test outc == centered(out)
+                                    imgc = centered(img)
+                                    outc = extreme_filter(extreme_func, imgc, se)
+                                    @test outc == centered(out)
+                                end
                             end
                         end
                     end
