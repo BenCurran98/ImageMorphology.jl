@@ -19,7 +19,7 @@ function test_in_new_julia_session(script::String, proj_dir::String, io = devnul
     file = tempname()
     write(file, """
     using Pkg, Test
-    Pkg.activate("$proj_dir"; io = $io)
+    Pkg.activate(escape_string("$proj_dir"); io = $io)
     Pkg.develop(; path = "$pkg_dir", io = $io)
     Pkg.add("LoopVectorization"; io = $io)
     $script
