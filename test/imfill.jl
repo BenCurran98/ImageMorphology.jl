@@ -26,6 +26,13 @@
     ]
     @test imfill(.!image, (0, 2)) == (.!answer)
 
+    # verify with a specified connectivity
+    imfill(.!image, (0, 5), strel_box((3, 3))) == .!answer
+
+    # and make sure we throw errors correctly
+    msg = "Interval must be non-negative and in format (min_range,max_range)"
+    @test_throws DomainError(msg) imfill(.!image, (0, -1), strel_box((3, 3)))
+
     #3 Dimensional case
     A = zeros(Bool, 3, size(image)[1], size(image)[2])
     A[1, :, :] = image
