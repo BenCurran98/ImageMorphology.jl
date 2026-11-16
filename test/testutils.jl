@@ -16,10 +16,11 @@ end
 # based on https://github.com/JuliaPlots/Plots.jl/blob/dd98bc0aa300bdf12dc85687e45c3968587fabc9/PlotsBase/test/test_preferences.jl
 function test_in_new_julia_session(script::String, proj_dir::String, io = devnull)
     pkg_dir = escape_string(pkgdir(ImageMorphology))
+    proj_dir_esc = escape_string(proj_dir)
     file = tempname()
     write(file, """
     using Pkg, Test
-    Pkg.activate(escape_string("$proj_dir"); io = $io)
+    Pkg.activate("$proj_dir_esc", io = $io)
     Pkg.develop(; path = "$pkg_dir", io = $io)
     Pkg.add("LoopVectorization"; io = $io)
     $script
