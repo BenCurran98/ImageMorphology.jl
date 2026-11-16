@@ -20,7 +20,9 @@ using .StructuringElements
 
 # flag indicating if we have LoopVectorization available in the current environment - indicates if we have the option of using SIMD or not
 const LV_PRESENT = Ref(false)
-const LV_MISSING_WARNING = "LoopVectorization.jl is required to be loaded in order to use SIMD acceleration. Run `using LoopVectorization` to enable this feature."
+const LV_MISSING_WARNING = "LoopVectorization.jl is required to be loaded in order to use SIMD acceleration. Restart Julia and run `using LoopVectorization; using ImageMorphology` to enable this feature."
+# flag indicating if the user has set a preference to use SIMD acceleration for extreme_filter as a compile-time preference
+const USE_SIMD = @load_preference("use_simd", false)
 
 """
     set_simd_use!(to_use::Bool)
@@ -38,6 +40,7 @@ function set_simd_use!(to_use::Bool)
     end
     # still set the flag to their preference in case they load LV later
     @set_preferences!("use_simd" => to_use)
+    @info "Set preference on whether to use SIMD acceleration in `extreme_filter` calls to $(to_use). Please restart Julia to see this change take effect"
 end
 
 """

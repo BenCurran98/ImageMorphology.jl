@@ -6,14 +6,14 @@ using OffsetArrays
 using ImageMetadata
 using Suppressor
 using Documenter
+using Base
 
+include("testutils.jl")
 include("simd_preferences.jl")
 
 @test isempty(detect_ambiguities(ImageMorphology))
 
 doctest(ImageMorphology; manual=false)
-
-include("testutils.jl")
 
 include("structuring_element.jl")
 include("utils.jl")

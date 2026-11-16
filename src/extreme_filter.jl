@@ -97,7 +97,14 @@ extreme_filter!(f, out, A; r=nothing, dims=coords_spatial(A)) = extreme_filter!(
 function extreme_filter!(f, out, A, Ω)
     axes(out) == axes(A) || throw(DimensionMismatch("axes(out) must match axes(A)"))
     require_select_function(f, eltype(A))
-    return _extreme_filter!(strel_type(Ω), f, out, A, Ω, will_use_simd())
+    @static if USE_SIMD
+        if !LV_PRESENT[]
+            @warn LV_MISSING_WARNING
+        end
+        return _extreme_filter!(strel_type(Ω), f, out, A, Ω, true)
+    else
+        _extreme_filter!(strel_type(Ω), f, out, A, Ω, false)
+    end
 end
 
 _extreme_filter!(::MorphologySE, f, out, A, Ω, ::Bool) = _extreme_filter_generic!(f, out, A, Ω)

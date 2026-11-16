@@ -100,35 +100,45 @@
             # check that our methods work using both SIMD acceleration and generic fallbacks
             for accelerate_mode ∈ (true, false)
                 set_simd_use!(accelerate_mode)
-                # ensure the optimized implementation work equivalently to the generic fallback implementation
-                for T in Any[Bool, Int, N0f8, Gray{N0f8}, Gray{Bool}, Gray{Float64}, Float64]
-                    for N in (1, 2, 3)
-                        sz = N == 3 ? (32, 32, 5) : ntuple(_ -> 32, N)
-                        img = T == Int ? rand(1:10, sz...) : rand(T, sz...)
-                        for r in (1, 3)
-                            dims_list = ntuple(i -> ntuple(identity, i), N)
-                            for dims in dims_list
-                                for extreme_func ∈ (min, max)
-                                    se = se_gen_func(ntuple(_ -> 2r + 1, N), dims)
-                                    ref = ImageMorphology._extreme_filter_generic!(extreme_func, similar(img), img, se)
-                                    out = extreme_filter(extreme_func, img, se)
-                                    @test out == ref
+                mktempdir() do tmp
+                    # we'll have to simulate a "restart" in julia for these changes to take effect
+                    test_in_new_julia_session("""
+                        # note - we include LoopVectorization here but we might not use it, depending on accelerate_mode
+                        using LoopVectorization
+                        using ImageMorphology
+                        using ImageCore
 
-                                    # `maybe_floattype` is used to pre-allocate the output for
-                                    # higher level operators (e.g., tophat) to avoid overflow
-                                    # behavior. We need to ensure it works correctly.
-                                    # https://github.com/JuliaImages/ImageMorphology.jl/issues/104
-                                    out = similar(img, ImageMorphology.maybe_floattype(T))
-                                    extreme_filter!(extreme_func, out, img, se)
-                                    @test out == ref
+                        # ensure the optimized implementation work equivalently to the generic fallback implementation
+                        for T in Any[Bool, Int, N0f8, Gray{N0f8}, Gray{Bool}, Gray{Float64}, Float64]
+                            for N in (1, 2, 3)
+                                sz = N == 3 ? (32, 32, 5) : ntuple(_ -> 32, N)
+                                img = T == Int ? rand(1:10, sz...) : rand(T, sz...)
+                                for r in (1, 3)
+                                    dims_list = ntuple(i -> ntuple(identity, i), N)
+                                    for dims in dims_list
+                                        for extreme_func ∈ (min, max)
+                                                se = $(se_gen_func)(ntuple(_ -> 2r + 1, N), dims)
+                                            ref = ImageMorphology._extreme_filter_generic!(extreme_func, similar(img), img, se)
+                                            out = extreme_filter(extreme_func, img, se)
+                                            @test out == ref
 
-                                    imgc = centered(img)
-                                    outc = extreme_filter(extreme_func, imgc, se)
-                                    @test outc == centered(out)
+                                            # `maybe_floattype` is used to pre-allocate the output for
+                                            # higher level operators (e.g., tophat) to avoid overflow
+                                            # behavior. We need to ensure it works correctly.
+                                            # https://github.com/JuliaImages/ImageMorphology.jl/issues/104
+                                            out = similar(img, ImageMorphology.maybe_floattype(T))
+                                            extreme_filter!(extreme_func, out, img, se)
+                                            @test out == ref
+
+                                            imgc = centered(img)
+                                            outc = extreme_filter(extreme_func, imgc, se)
+                                            @test outc == centered(out)
+                                        end
+                                    end
                                 end
                             end
                         end
-                    end
+                    """, tmp)
                 end
             end
         end
