@@ -13,11 +13,6 @@
             @test_warn ImageMorphology.LV_MISSING_WARNING set_simd_use!(true)
         """, tmp)
 
-        # now if we reload Julia and use ImageMorphology, we should see that it's set, but it should throw a warning if LV isn't loaded
-        test_in_new_julia_session("""
-            Pkg.precompile("ImageMorphology")
-        """, tmp)
-
         # if we restart Julia and use LoopVectorization, we should get no warning
         test_in_new_julia_session("""
             using LoopVectorization
@@ -42,6 +37,16 @@
             using LoopVectorization
             using ImageMorphology
             @test ImageMorphology.will_use_simd()
+        """, tmp)
+
+        # if we have the flag set but we don't have LoopVectorization loaded, should throw a warning when calling extreme_filter
+        test_in_new_julia_session("""
+            using ImageMorphology
+            # we won't use SIMD if we haven't loaded LV
+            @test !ImageMorphology.will_use_simd()
+            # but the flag should be set
+            @test ImageMorphology.USE_SIMD
+            @test_warn ImageMorphology.LV_MISSING_WARNING extreme_filter(max, rand(1:10, 7, 7))
         """, tmp)
     end
 
