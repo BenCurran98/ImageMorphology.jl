@@ -5,12 +5,17 @@ on:
   pull_request:
     types: [closed]
 
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   doc-preview-cleanup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout gh-pages branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           ref: gh-pages
       - name: Delete preview and history + push changes

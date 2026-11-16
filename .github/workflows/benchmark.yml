@@ -4,24 +4,20 @@ on:
   pull_request:
     types: [labeled, opened, synchronize, reopened]
 
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   Benchmark:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run benchmark')
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
-      - name: Cache artifacts
-        uses: actions/cache@v1
-        env:
-          cache-name: cache-artifacts
-        with:
-          path: ~/.julia/artifacts
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-test-${{ env.cache-name }}-
-            ${{ runner.os }}-test-
-            ${{ runner.os }}-
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+      - uses: julia-actions/cache@v3
+      - uses: julia-actions/julia-buildpkg@v1
       - name: Install dependencies
         run: julia -e 'using Pkg; pkg"add JSON PkgBenchmark BenchmarkCI@0.1"'
       - name: Run benchmarks
